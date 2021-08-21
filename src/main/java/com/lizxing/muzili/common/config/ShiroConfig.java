@@ -45,10 +45,13 @@ public class ShiroConfig {
         Map<String, String> filterMap = new LinkedHashMap<>();
         filterMap.put("/druid/**", "anon");
         filterMap.put("/sys/login", "anon");
+        filterMap.put("/sys/captcha.jpg", "anon");
         filterMap.put("/swagger/**", "anon");
         filterMap.put("/v2/api-docs", "anon");
         filterMap.put("/swagger-ui.html", "anon");
         filterMap.put("/swagger-resources/**", "anon");
+        filterMap.put("/webjars/**", "anon");
+        filterMap.put("/test/**", "anon");
         filterMap.put("/**", "shiroFilter");
         shiroFilterFactoryBean.setFilterChainDefinitionMap(filterMap);
 

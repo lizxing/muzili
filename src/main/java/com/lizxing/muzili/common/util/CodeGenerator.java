@@ -24,10 +24,15 @@ public class CodeGenerator {
         // 全局配置
         GlobalConfig gc = new GlobalConfig();
         String projectPath = System.getProperty("user.dir");
-        gc.setOutputDir(projectPath + "/src/main/java");
-        gc.setAuthor("lizxing");
-        gc.setOpen(false);
-        gc.setSwagger2(true); //实体属性 Swagger2 注解
+        gc.setOutputDir(projectPath + "/src/main/java")
+                .setAuthor("lizxing")
+                .setOpen(false)
+                .setSwagger2(true)
+                .setMapperName("%sDao")
+                .setXmlName("%sMapper")
+                .setServiceName("%sService")
+                .setServiceImplName("%sServiceImpl")
+                .setControllerName("%sController");
         mpg.setGlobalConfig(gc);
 
         // 数据源配置
@@ -40,7 +45,12 @@ public class CodeGenerator {
 
         // 包配置
         PackageConfig pc = new PackageConfig();
-        pc.setParent("com.lizxing.muzili.module.sys");
+        pc.setParent("com.lizxing.muzili.module.sys")
+                .setMapper("dao")
+                .setEntity("entity")
+                .setMapper("dao")
+                .setService("service")
+                .setServiceImpl("service.impl");
         mpg.setPackageInfo(pc);
 
         // 自定义配置
@@ -90,7 +100,7 @@ public class CodeGenerator {
 //        strategy.setSuperControllerClass("你自己的父类控制器,没有就不用设置!");
         // 写于父类中的公共字段
 //        strategy.setSuperEntityColumns("id");
-        strategy.setInclude("sys_user,sys_role,sys_menu,sys_user_role,sys_role_menu,sys_user_token".split(","));
+        strategy.setInclude("sys_user,sys_role,sys_menu,sys_user_role,sys_role_menu,sys_user_token,sys_log,sys_captcha".split(","));
         strategy.setControllerMappingHyphenStyle(true);
         strategy.setTablePrefix(pc.getModuleName() + "_");
         mpg.setStrategy(strategy);

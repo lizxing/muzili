@@ -3,6 +3,7 @@ package com.lizxing.muzili.common.config;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.google.gson.Gson;
 import com.lizxing.muzili.common.util.HttpContextUtils;
+import com.lizxing.muzili.common.util.Result;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.web.filter.authc.AuthenticatingFilter;
@@ -30,7 +31,7 @@ public class ShiroFilter extends AuthenticatingFilter {
             return null;
         }
 
-        return new OAuth2Token(token);
+        return new ShiroToken(token);
     }
 
     /**
@@ -46,20 +47,19 @@ public class ShiroFilter extends AuthenticatingFilter {
         if(((HttpServletRequest) request).getMethod().equals(RequestMethod.OPTIONS.name())){
             return true;
         }
-
         return false;
     }
 
     @Override
     protected boolean onAccessDenied(ServletRequest request, ServletResponse response) throws Exception {
-        //获取请求token，如果token不存在，直接返回401
+        //获取请求token
         String token = getRequestToken((HttpServletRequest) request);
         if(StringUtils.isBlank(token)){
             HttpServletResponse httpResponse = (HttpServletResponse) response;
             httpResponse.setHeader("Access-Control-Allow-Credentials", "true");
             httpResponse.setHeader("Access-Control-Allow-Origin", HttpContextUtils.getOrigin());
 
-            String json = new Gson().toJson(R.error(HttpStatus.SC_UNAUTHORIZED, "invalid token"));
+            String json = new Gson().toJson(Result.failed("invalid token"));
 
             httpResponse.getWriter().print(json);
 
@@ -78,7 +78,7 @@ public class ShiroFilter extends AuthenticatingFilter {
         try {
             //处理登录失败的异常
             Throwable throwable = e.getCause() == null ? e : e.getCause();
-            R r = R.error(HttpStatus.SC_UNAUTHORIZED, throwable.getMessage());
+            Result r = Result.failed(throwable.getMessage());
 
             String json = new Gson().toJson(r);
             httpResponse.getWriter().print(json);
