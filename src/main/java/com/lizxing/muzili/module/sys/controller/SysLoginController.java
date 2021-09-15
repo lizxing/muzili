@@ -20,7 +20,6 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.Map;
 
 /**
  * @author lizxing
@@ -59,10 +58,12 @@ public class SysLoginController extends BaseController{
     }
 
 
-//    @SysLog("登录")
+    @SysLog("登录")
     @ApiOperation(value = "登录")
     @PostMapping("/login")
     public Result login(@RequestBody SysLoginParam sysLoginParam) {
+
+        // 为方便测试 =0直接放行
         boolean captcha = sysCaptchaService.validate(sysLoginParam.getUuid(), sysLoginParam.getCaptcha());
         if (!captcha) {
             return Result.failed("验证码不正确");

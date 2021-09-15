@@ -1,12 +1,14 @@
 package com.lizxing.muzili.common.aspect;
 
+import cn.hutool.core.convert.Convert;
 import com.google.gson.Gson;
 import com.lizxing.muzili.common.util.HttpContextUtils;
 import com.lizxing.muzili.common.util.IPUtils;
+import com.lizxing.muzili.common.util.Result;
+import com.lizxing.muzili.module.sys.dto.SysLoginParam;
 import com.lizxing.muzili.module.sys.entity.SysLog;
 import com.lizxing.muzili.module.sys.entity.SysUser;
 import com.lizxing.muzili.module.sys.service.SysLogService;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -21,7 +23,6 @@ import org.springframework.stereotype.Component;
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 /**
  * @author lizxing
@@ -48,8 +49,12 @@ public class SysLogAspect {
         // 执行时长(毫秒)
         long time = System.currentTimeMillis() - beginTime;
 
-        // 保存日志
-        saveSysLog(point, time);
+        // 执行成功，保存日志
+        Result convert = Convert.convert(Result.class, result);
+        String codeStr = "code";
+        if (Integer.valueOf(convert.get(codeStr).toString()) == 0){
+            saveSysLog(point, time);
+        }
 
         return result;
     }
@@ -61,16 +66,16 @@ public class SysLogAspect {
         SysLog sysLog = new SysLog();
         com.lizxing.muzili.common.annotation.SysLog syslogAnnotation = method.getAnnotation(com.lizxing.muzili.common.annotation.SysLog.class);
         if(syslogAnnotation != null){
-            //注解上的描述
+            // 注解上的描述
             sysLog.setOperation(syslogAnnotation.value());
         }
 
-        //请求的方法名
+        // 请求的方法名
         String className = joinPoint.getTarget().getClass().getName();
         String methodName = signature.getName();
         sysLog.setMethod(className + "." + methodName + "()");
 
-        //请求的参数
+        // 请求的参数
         Object[] args = joinPoint.getArgs();
         try{
             String params = new Gson().toJson(args);
@@ -79,14 +84,20 @@ public class SysLogAspect {
             logger.info("获取请求参数失败");
         }
 
-        //获取request
+        // 获取request
         HttpServletRequest request = HttpContextUtils.getHttpServletRequest();
-        //设置IP地址
+        // 设置IP地址
         sysLog.setIp(IPUtils.getIpAddr(request));
 
         //用户名
-        String username = ((SysUser) SecurityUtils.getSubject().getPrincipal()).getUsername();
-        sysLog.setUsername(username);
+        String loginStr = "login";
+        if (loginStr.equals(methodName)){
+            SysLoginParam sysLoginParam = Convert.convert(SysLoginParam.class, args[0]);
+            sysLog.setUsername(sysLoginParam.getUsername());
+        } else {
+            String username = ((SysUser) SecurityUtils.getSubject().getPrincipal()).getUsername();
+            sysLog.setUsername(username);
+        }
 
         sysLog.setTime(time);
         sysLog.setCreateDate(LocalDateTime.now());

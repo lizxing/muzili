@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import java.awt.image.BufferedImage;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 /**
  * <p>
@@ -61,14 +60,11 @@ public class SysCaptchaServiceImpl extends ServiceImpl<SysCaptchaDao, SysCaptcha
         this.removeById(uuid);
 
         // 为方便测试 =0直接放行
-        if ("0".equals(code)){
+        String zero = "0";
+        if (zero.equals(code)){
             return true;
         }
 
-        if(sysCaptcha.getCode().equalsIgnoreCase(code) && sysCaptcha.getExpireTime().isAfter(LocalDateTime.now()) ){
-            return true;
-        }
-
-        return false;
+        return sysCaptcha.getCode().equalsIgnoreCase(code) && sysCaptcha.getExpireTime().isAfter(LocalDateTime.now());
     }
 }
